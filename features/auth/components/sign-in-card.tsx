@@ -23,7 +23,7 @@ import { useLogin } from '../api/use-login'
 import { signInFormSchema } from '../schema'
 
 export const SignInCard = () => {
-  const { mutate: login } = useLogin()
+  const { mutate: login, isPending } = useLogin()
 
   const signInForm = useForm<z.infer<typeof signInFormSchema>>({
     resolver: zodResolver(signInFormSchema),
@@ -63,6 +63,7 @@ export const SignInCard = () => {
                   <FormControl>
                     <Input
                       {...field}
+                      disabled={isPending}
                       type="email"
                       placeholder="Email address"
                     />
@@ -78,14 +79,24 @@ export const SignInCard = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input {...field} type="password" placeholder="Password" />
+                    <Input
+                      {...field}
+                      disabled={isPending}
+                      type="password"
+                      placeholder="Password"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" size="lg" className="w-full">
+            <Button
+              disabled={isPending}
+              type="submit"
+              size="lg"
+              className="w-full"
+            >
               Login
             </Button>
           </form>
