@@ -8,7 +8,7 @@ declare global {
       NEXT_PUBLIC_APP_BASE_URL: string
 
       // appwrite
-      NEXT_PUBLIC_APPWRITE_PROJECT_ID: string
+      NEXT_PUBLIC_APPWRITE_PROJECT: string
       NEXT_PUBLIC_APPWRITE_ENDPOINT: string
       NEXT_APPWRITE_KEY: string
     }
