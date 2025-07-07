@@ -34,9 +34,19 @@ export const SignInCard = () => {
   })
 
   const onSubmit = (values: z.infer<typeof signInFormSchema>) => {
-    login({
-      json: values,
-    })
+    login(
+      {
+        json: values,
+      },
+      {
+        onSuccess: () => {
+          signInForm.reset()
+        },
+        onError: () => {
+          signInForm.resetField('password')
+        },
+      },
+    )
   }
 
   return (
