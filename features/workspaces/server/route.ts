@@ -7,44 +7,55 @@ import { sessionMiddleware } from '@/lib/session-middleware'
 
 import { createWorkspaceSchema } from '../schema'
 
-const app = new Hono().post(
-  '/',
-  zValidator('form', createWorkspaceSchema),
-  sessionMiddleware,
-  async (ctx) => {
+const app = new Hono()
+  .get('/', sessionMiddleware, async (ctx) => {
     const database = ctx.get('databases')
-    const storage = ctx.get('storage')
-    const user = ctx.get('user')
 
-    const { name, image } = ctx.req.valid('form')
+    const workspaces = await database.listDocuments(DATABASE_ID, WORKSPACES_ID)
 
-    let uploadedImageUrl: string | undefined
+    return ctx.json({ data: workspaces })
+  })
+  .post(
+    '/',
+    zValidator('form', createWorkspaceSchema),
+    sessionMiddleware,
+    async (ctx) => {
+      const database = ctx.get('databases')
+      const storage = ctx.get('storage')
+      const user = ctx.get('user')
 
-    if (image instanceof File) {
-      const file = await storage.createFile(
-        IMAGES_BUCKET_ID,
+      const { name, image } = ctx.req.valid('form')
+
+      let uploadedImageUrl: string | undefined
+
+      if (image instanceof File) {
+        const file = await storage.createFile(
+          IMAGES_BUCKET_ID,
+          ID.unique(),
+          image,
+        )
+
+        const arrayBuffer = await storage.getFileView(
+          IMAGES_BUCKET_ID,
+          file.$id,
+        )
+
+        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString('base64')}`
+      }
+
+      const workspace = await database.createDocument(
+        DATABASE_ID,
+        WORKSPACES_ID,
         ID.unique(),
-        image,
+        {
+          name,
+          userId: user.$id,
+          imageUrl: uploadedImageUrl,
+        },
       )
 
-      const arrayBuffer = await storage.getFileView(IMAGES_BUCKET_ID, file.$id)
-
-      uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString('base64')}`
-    }
-
-    const workspace = await database.createDocument(
-      DATABASE_ID,
-      WORKSPACES_ID,
-      ID.unique(),
-      {
-        name,
-        userId: user.$id,
-        imageUrl: uploadedImageUrl,
-      },
-    )
-
-    return ctx.json({ data: workspace })
-  },
-)
+      return ctx.json({ data: workspace })
+    },
+  )
 
 export default app
