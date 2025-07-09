@@ -27,6 +27,10 @@ export const useLogout = () => {
       queryClient.invalidateQueries({
         queryKey: ['current'],
       })
+
+      queryClient.invalidateQueries({
+        queryKey: ['workspaces'],
+      })
     },
     onError: (error) => {
       console.error('[REGISTER]: ', error)

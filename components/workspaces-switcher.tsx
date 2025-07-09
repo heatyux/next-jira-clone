@@ -24,7 +24,7 @@ export const WorkspacesSwitcher = () => {
       </div>
 
       <Select>
-        <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
+        <SelectTrigger className="w-full bg-neutral-200 font-medium px-1 py-6">
           <SelectValue placeholder="No workspace selected" />
         </SelectTrigger>
 

@@ -1,8 +1,14 @@
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { ID } from 'node-appwrite'
+import { ID, Query } from 'node-appwrite'
 
-import { DATABASE_ID, IMAGES_BUCKET_ID, WORKSPACES_ID } from '@/config/db'
+import {
+  DATABASE_ID,
+  IMAGES_BUCKET_ID,
+  MEMBERS_ID,
+  WORKSPACES_ID,
+} from '@/config/db'
+import { MemberRole } from '@/features/members/types'
 import { sessionMiddleware } from '@/lib/session-middleware'
 
 import { createWorkspaceSchema } from '../schema'
@@ -10,8 +16,22 @@ import { createWorkspaceSchema } from '../schema'
 const app = new Hono()
   .get('/', sessionMiddleware, async (ctx) => {
     const database = ctx.get('databases')
+    const user = ctx.get('user')
+    const members = await database.listDocuments(DATABASE_ID, MEMBERS_ID, [
+      Query.equal('userId', user.$id),
+    ])
 
-    const workspaces = await database.listDocuments(DATABASE_ID, WORKSPACES_ID)
+    if (members.total === 0) {
+      return ctx.json({ data: { documents: [], total: 0 } })
+    }
+
+    const workspaceIds = members.documents.map((member) => member.workspaceId)
+
+    const workspaces = await database.listDocuments(
+      DATABASE_ID,
+      WORKSPACES_ID,
+      [Query.contains('$id', workspaceIds), Query.orderDesc('$createdAt')],
+    )
 
     return ctx.json({ data: workspaces })
   })
@@ -53,6 +73,12 @@ const app = new Hono()
           imageUrl: uploadedImageUrl,
         },
       )
+
+      await database.createDocument(DATABASE_ID, MEMBERS_ID, ID.unique(), {
+        workspaceId: workspace.$id,
+        userId: user.$id,
+        role: MemberRole.ADMIN,
+      })
 
       return ctx.json({ data: workspace })
     },
