@@ -148,7 +148,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                           type="file"
                           className="hidden"
                           onChange={handleImageChange}
-                          accept=".jpg, .png, .jpeg, .svg"
+                          accept=".jpg, .png, .jpeg"
                           ref={inputRef}
                           disabled={isPending}
                         />
