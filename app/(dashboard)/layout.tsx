@@ -2,6 +2,7 @@ import { PropsWithChildren } from 'react'
 
 import { Navbar } from '@/components/navbar'
 import { Sidebar } from '@/components/sidebar'
+import { CreateWorkspaceModal } from '@/features/workspaces/components/create-workspace-modal'
 
 const DashboardLayout = ({ children }: PropsWithChildren) => {
   return (
@@ -19,6 +20,8 @@ const DashboardLayout = ({ children }: PropsWithChildren) => {
           </div>
         </div>
       </div>
+
+      <CreateWorkspaceModal />
     </div>
   )
 }
