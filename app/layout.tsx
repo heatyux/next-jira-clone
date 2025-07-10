@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Toaster } from 'sonner'
 
 import { QueryProvider } from '@/components/query-provider'
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased min-h-screen`}>
-        <QueryProvider>
-          {children}
+        <NuqsAdapter>
+          <QueryProvider>
+            {children}
 
-          <Toaster theme="light" richColors closeButton />
-        </QueryProvider>
+            <Toaster theme="light" richColors closeButton />
+          </QueryProvider>
+        </NuqsAdapter>
       </body>
     </html>
   )
