@@ -130,7 +130,7 @@ const app = new Hono()
         workspaceId,
         {
           name,
-          iamgeUrl: uploadedImageUrl,
+          imageUrl: uploadedImageUrl,
         },
       )
 
