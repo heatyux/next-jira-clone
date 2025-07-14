@@ -9,10 +9,11 @@ import {
   WORKSPACES_ID,
 } from '@/config/db'
 import { MemberRole } from '@/features/members/types'
+import { getMember } from '@/features/members/utils'
 import { sessionMiddleware } from '@/lib/session-middleware'
 import { generateInviteCode } from '@/lib/utils'
 
-import { createWorkspaceSchema } from '../schema'
+import { createWorkspaceSchema, updateWorkspaceSchema } from '../schema'
 
 const app = new Hono()
   .get('/', sessionMiddleware, async (ctx) => {
@@ -81,6 +82,57 @@ const app = new Hono()
         userId: user.$id,
         role: MemberRole.ADMIN,
       })
+
+      return ctx.json({ data: workspace })
+    },
+  )
+  .patch(
+    '/:workspaceId',
+    sessionMiddleware,
+    zValidator('form', updateWorkspaceSchema),
+    async (ctx) => {
+      const databases = ctx.get('databases')
+      const storage = ctx.get('storage')
+      const user = ctx.get('user')
+
+      const { workspaceId } = ctx.req.param()
+      const { name, image } = ctx.req.valid('form')
+
+      const member = await getMember({
+        databases,
+        workspaceId,
+        userId: user.$id,
+      })
+
+      if (!member || member.role !== MemberRole.ADMIN) {
+        return ctx.json({ error: 'Unauthorized' }, 401)
+      }
+
+      let uploadedImageUrl: string | undefined
+
+      if (image instanceof File) {
+        const file = await storage.createFile(
+          IMAGES_BUCKET_ID,
+          ID.unique(),
+          image,
+        )
+
+        const arrayBuffer = await storage.getFileView(
+          IMAGES_BUCKET_ID,
+          file.$id,
+        )
+
+        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString('base64')}`
+      }
+      const workspace = await databases.updateDocument(
+        DATABASE_ID,
+        WORKSPACES_ID,
+        workspaceId,
+        {
+          name,
+          iamgeUrl: uploadedImageUrl,
+        },
+      )
 
       return ctx.json({ data: workspace })
     },
