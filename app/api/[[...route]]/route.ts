@@ -3,6 +3,7 @@ import { handle } from 'hono/vercel'
 
 import auth from '@/features/auth/server/route'
 import members from '@/features/members/server/route'
+import projects from '@/features/projects/server/route'
 import workspaces from '@/features/workspaces/server/route'
 
 export const runtime = 'nodejs'
@@ -14,6 +15,7 @@ const routes = app
   .route('/auth', auth)
   .route('/workspaces', workspaces)
   .route('/members', members)
+  .route('/projects', projects)
 
 export type AppType = typeof routes
 

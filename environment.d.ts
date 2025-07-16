@@ -16,6 +16,7 @@ declare global {
       NEXT_PUBLIC_APPWRITE_DATABASE_ID: string
       NEXT_PUBLIC_APPWRITE_WORKSPACES_ID: string
       NEXT_PUBLIC_APPWRITE_MEMBERS_ID: string
+      NEXT_PUBLIC_APPWRITE_PROJECTS_ID: string
 
       // appwrite storage ids
       NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID: string
