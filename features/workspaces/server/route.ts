@@ -53,10 +53,16 @@ const app = new Hono()
       let uploadedImageUrl: string | undefined
 
       if (image instanceof File) {
+        const fileExt = image.name.split('.').at(-1) ?? 'png'
+        const fileName = `${ID.unique()}.${fileExt}`
+        const renamedImage = new File([image], fileName, {
+          type: image.type,
+        })
+
         const file = await storage.createFile(
           IMAGES_BUCKET_ID,
           ID.unique(),
-          image,
+          renamedImage,
         )
 
         const arrayBuffer = await storage.getFileView(
@@ -113,10 +119,16 @@ const app = new Hono()
       let uploadedImageUrl: string | undefined
 
       if (image instanceof File) {
+        const fileExt = image.name.split('.').at(-1) ?? 'png'
+        const fileName = `${ID.unique()}.${fileExt}`
+        const renamedImage = new File([image], fileName, {
+          type: image.type,
+        })
+
         const file = await storage.createFile(
           IMAGES_BUCKET_ID,
           ID.unique(),
-          image,
+          renamedImage,
         )
 
         const arrayBuffer = await storage.getFileView(
