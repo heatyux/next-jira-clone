@@ -36,6 +36,7 @@ export const useUpdateWorkspace = () => {
       })
       queryClient.invalidateQueries({
         queryKey: ['workspace', data.$id],
+        exact: true,
       })
     },
     onError: (error) => {

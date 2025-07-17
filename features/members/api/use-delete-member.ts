@@ -32,6 +32,7 @@ export const useDeleteMember = () => {
 
       queryClient.invalidateQueries({
         queryKey: ['members', data.workspaceId],
+        exact: true,
       })
     },
     onError: (error) => {

@@ -35,6 +35,7 @@ export const useResetInviteCode = () => {
       })
       queryClient.invalidateQueries({
         queryKey: ['workspace', data.$id],
+        exact: true,
       })
     },
     onError: (error) => {

@@ -33,6 +33,7 @@ export const useUpdateMember = () => {
 
       queryClient.invalidateQueries({
         queryKey: ['members', data.workspaceId],
+        exact: true,
       })
     },
     onError: (error) => {
