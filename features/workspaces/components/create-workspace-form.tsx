@@ -69,6 +69,12 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
     const file = e.target.files?.[0]
 
     if (file) {
+      const validImageTypes = ['image/png', 'image/jpg', 'image/jpeg']
+
+      if (!validImageTypes.includes(file.type)) {
+        return toast.error('File is not a valid image.')
+      }
+
       if (file.size > MAX_FILE_SIZE)
         return toast.error('Image size cannot exceed 1 MB.')
 
