@@ -5,6 +5,7 @@ import React, { useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -33,6 +34,7 @@ type CreateProjectFormProps = {
 }
 
 export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
+  const router = useRouter()
   const workspaceId = useWorkspaceId()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -59,10 +61,10 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
         form: finalValues,
       },
       {
-        onSuccess: () => {
+        onSuccess: ({ data }) => {
           createProjectForm.reset()
 
-          // TODO: Redirect to project id page
+          router.push(`/workspaces/${workspaceId}/projects/${data.$id}`)
         },
       },
     )
