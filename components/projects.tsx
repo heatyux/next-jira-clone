@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils'
 export const Projects = () => {
   const pathname = usePathname()
   const workspaceId = useWorkspaceId()
-  const projectId = null // TODO: Fetch project id using hook
 
   const { open } = useCreateProjectModal()
   const { data: projects } = useGetProjects({ workspaceId })
@@ -29,7 +28,7 @@ export const Projects = () => {
       </div>
 
       {projects?.documents.map((project) => {
-        const href = `/workspaces/${workspaceId}/proejcts/${projectId}`
+        const href = `/workspaces/${workspaceId}/projects/${project.$id}`
         const isActive = pathname === href
 
         console.log({ project })
