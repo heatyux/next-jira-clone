@@ -6,32 +6,31 @@ import { toast } from 'sonner'
 import { client } from '@/lib/hono'
 
 type ResponseType = InferResponseType<
-  (typeof client.api.projects)[':projectId']['$patch'],
+  (typeof client.api.projects)[':projectId']['$delete'],
   200
 >
 type RequestType = InferRequestType<
-  (typeof client.api.projects)[':projectId']['$patch']
+  (typeof client.api.projects)[':projectId']['$delete']
 >
 
-export const useUpdateProject = () => {
+export const useDeleteProject = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ form, param }) => {
-      const response = await client.api.projects[':projectId']['$patch']({
-        form,
+    mutationFn: async ({ param }) => {
+      const response = await client.api.projects[':projectId']['$delete']({
         param,
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update project.')
+        throw new Error('Failed to delete project.')
       }
 
       return await response.json()
     },
     onSuccess: ({ data }) => {
-      toast.success('Project updated.')
+      toast.success('Project deleted.')
       router.refresh()
 
       queryClient.invalidateQueries({
@@ -44,9 +43,9 @@ export const useUpdateProject = () => {
       })
     },
     onError: (error) => {
-      console.log('[UPDATE_PROJECT]: ', error)
+      console.log('[DELETE_PROJECT]: ', error)
 
-      toast.error('Failed to update project.')
+      toast.error('Failed to delete project.')
     },
   })
 

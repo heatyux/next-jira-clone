@@ -23,8 +23,10 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useConfirm } from '@/hooks/use-confirm'
 import { cn } from '@/lib/utils'
 
+import { useDeleteProject } from '../api/use-delete-project'
 import { useUpdateProject } from '../api/use-update-project'
 import { updateProjectSchema } from '../schema'
 import { Project } from '../types'
@@ -40,7 +42,17 @@ export const EditProjectForm = ({
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { mutate: updateProject, isPending } = useUpdateProject()
+  const [DeleteDialog, confirmDelete] = useConfirm(
+    'Delete Project',
+    'This action cannot be undone.',
+    'destructive',
+  )
+
+  const { mutate: updateProject, isPending: isUpdatingProject } =
+    useUpdateProject()
+  const { mutate: deleteProject, isPending: isDeletingProject } =
+    useDeleteProject()
+  const isPending = isUpdatingProject || isDeletingProject
 
   const updateProjectForm = useForm<z.infer<typeof updateProjectSchema>>({
     resolver: zodResolver(updateProjectSchema),
@@ -74,6 +86,23 @@ export const EditProjectForm = ({
 
       updateProjectForm.setValue('image', file)
     }
+  }
+
+  const handleDelete = async () => {
+    const ok = await confirmDelete()
+
+    if (!ok) {
+      return
+    }
+
+    deleteProject(
+      { param: { projectId: initialValues.$id } },
+      {
+        onSuccess: ({ data }) => {
+          window.location.href = `/workspaces/${data.workspaceId}`
+        },
+      },
+    )
   }
 
   return (
@@ -224,6 +253,33 @@ export const EditProjectForm = ({
           </Form>
         </CardContent>
       </Card>
+
+      <Card className="size-full border-none shadow-none">
+        <CardContent className="p-7">
+          <div className="flex flex-col">
+            <h3 className="font-bold">Danger Zone</h3>
+            <p className="text-sm text-muted-foreground">
+              Deleting a project is irreversible and will remove all associated
+              data.
+            </p>
+
+            <DottedSeparator className="py-7" />
+
+            <Button
+              size="sm"
+              variant="destructive"
+              type="button"
+              disabled={isPending}
+              className="mt-6 w-fit ml-auto"
+              onClick={handleDelete}
+            >
+              Delete Project
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <DeleteDialog />
     </div>
   )
 }
