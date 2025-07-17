@@ -7,7 +7,8 @@ import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID } from '@/config/db'
 import { getMember } from '@/features/members/utils'
 import { sessionMiddleware } from '@/lib/session-middleware'
 
-import { createProjectSchema } from '../schema'
+import { createProjectSchema, updateProjectSchema } from '../schema'
+import { Project } from '../types'
 
 const app = new Hono()
   .get(
@@ -83,6 +84,70 @@ const app = new Hono()
         {
           name,
           workspaceId,
+          imageUrl: uploadedImageUrl,
+        },
+      )
+
+      return ctx.json({ data: project })
+    },
+  )
+  .patch(
+    '/:projectId',
+    sessionMiddleware,
+    zValidator('form', updateProjectSchema),
+    async (ctx) => {
+      const databases = ctx.get('databases')
+      const storage = ctx.get('storage')
+      const user = ctx.get('user')
+
+      const { projectId } = ctx.req.param()
+      const { name, image } = ctx.req.valid('form')
+
+      const existingProject = await databases.getDocument<Project>(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId,
+      )
+
+      const member = await getMember({
+        databases,
+        workspaceId: existingProject.workspaceId,
+        userId: user.$id,
+      })
+
+      if (!member) {
+        return ctx.json({ error: 'Unauthorized.' }, 401)
+      }
+
+      let uploadedImageUrl: undefined | string
+
+      if (image instanceof File) {
+        const fileExt = image.name.split('.').at(-1) ?? 'png'
+        const fileName = `${ID.unique()}.${fileExt}`
+        const renamedImage = new File([image], fileName, {
+          type: image.type,
+        })
+
+        const file = await storage.createFile(
+          IMAGES_BUCKET_ID,
+          ID.unique(),
+          renamedImage,
+        )
+
+        const arrayBuffer = await storage.getFileView(
+          IMAGES_BUCKET_ID,
+          file.$id,
+        )
+
+        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString('base64')}`
+      }
+
+      const project = await databases.updateDocument(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId,
+        {
+          name,
           imageUrl: uploadedImageUrl,
         },
       )

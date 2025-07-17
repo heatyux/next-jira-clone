@@ -10,3 +10,14 @@ export const createProjectSchema = z.object({
     .optional(),
   workspaceId: z.string({ message: 'Workspace id is required.' }),
 })
+
+export const updateProjectSchema = z.object({
+  name: z.string().trim().min(1, 'Project name is required.'),
+  image: z
+    .union([
+      z.instanceof(File),
+      z.string().transform((val) => (val === '' ? undefined : val)),
+    ])
+    .optional(),
+  projectId: z.string({ message: 'Workspace id is required.' }),
+})
