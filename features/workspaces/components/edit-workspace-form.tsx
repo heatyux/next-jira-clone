@@ -78,17 +78,10 @@ export const EditWorkspaceForm = ({
       image: values.image instanceof File ? values.image : '',
     }
 
-    updateWorkspace(
-      {
-        form: finalValues,
-        param: { workspaceId: initialValues.$id },
-      },
-      {
-        onSuccess: () => {
-          router.refresh()
-        },
-      },
-    )
+    updateWorkspace({
+      form: finalValues,
+      param: { workspaceId: initialValues.$id },
+    })
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,16 +129,9 @@ export const EditWorkspaceForm = ({
       return
     }
 
-    resetInviteCode(
-      {
-        param: { workspaceId: initialValues.$id },
-      },
-      {
-        onSuccess: () => {
-          router.refresh()
-        },
-      },
-    )
+    resetInviteCode({
+      param: { workspaceId: initialValues.$id },
+    })
   }
 
   return (
