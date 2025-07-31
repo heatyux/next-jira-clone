@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { DatePicker } from '@/components/date-picker'
 import { DottedSeparator } from '@/components/dotted-separator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,11 +19,21 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { MemberAvatar } from '@/features/members/components/member-avatar'
+import { ProjectAvatar } from '@/features/projects/components/project-avatar'
 import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id'
 import { cn } from '@/lib/utils'
 
 import { useCreateTask } from '../api/use-create-task'
 import { createTaskSchema } from '../schema'
+import { TaskStatus } from '../types'
 
 type CreateTaskFormProps = {
   onCancel?: () => void
@@ -30,7 +41,11 @@ type CreateTaskFormProps = {
   memberOptions: { id: string; name: string }[]
 }
 
-export const CreateTaskForm = ({ onCancel }: CreateTaskFormProps) => {
+export const CreateTaskForm = ({
+  onCancel,
+  projectOptions,
+  memberOptions,
+}: CreateTaskFormProps) => {
   const workspaceId = useWorkspaceId()
 
   const { mutate: createTask, isPending } = useCreateTask()
@@ -41,6 +56,10 @@ export const CreateTaskForm = ({ onCancel }: CreateTaskFormProps) => {
       name: '',
       workspaceId,
       dueDate: undefined,
+      assigneeId: undefined,
+      description: '',
+      projectId: undefined,
+      status: undefined,
     },
   })
 
@@ -91,17 +110,148 @@ export const CreateTaskForm = ({ onCancel }: CreateTaskFormProps) => {
                 disabled={isPending}
                 control={createTaskForm.control}
                 name="dueDate"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Due Date</FormLabel>
-                    <FormControl>{/* TODO: Date picker */}</FormControl>
+                    <FormControl>
+                      <DatePicker
+                        {...field}
+                        disabled={isPending}
+                        placeholder="Select due date"
+                      />
+                    </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                disabled={isPending}
+                control={createTaskForm.control}
+                name="assigneeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assignee</FormLabel>
+                    <Select
+                      disabled={isPending}
+                      defaultValue={field.value}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          {field.value ? (
+                            <SelectValue placeholder="Select assignee" />
+                          ) : (
+                            'Select assignee'
+                          )}
+                        </SelectTrigger>
+                      </FormControl>
+                      <FormMessage />
+                      <SelectContent>
+                        {memberOptions.map((member) => (
+                          <SelectItem key={member.id} value={member.id}>
+                            <div className="flex items-center gap-x-2">
+                              <MemberAvatar
+                                className="size-6"
+                                name={member.name}
+                              />
+                              {member.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                disabled={isPending}
+                control={createTaskForm.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select
+                      disabled={isPending}
+                      defaultValue={field.value}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          {field.value ? (
+                            <SelectValue placeholder="Select status" />
+                          ) : (
+                            'Select status'
+                          )}
+                        </SelectTrigger>
+                      </FormControl>
+                      <FormMessage />
+                      <SelectContent>
+                        <SelectItem value={TaskStatus.BACKLOG}>
+                          Backlog
+                        </SelectItem>
+                        <SelectItem value={TaskStatus.IN_PROGRESS}>
+                          In Progress
+                        </SelectItem>
+                        <SelectItem value={TaskStatus.IN_REVIEW}>
+                          In Review
+                        </SelectItem>
+                        <SelectItem value={TaskStatus.TODO}>Todo</SelectItem>
+                        <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                disabled={isPending}
+                control={createTaskForm.control}
+                name="projectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project</FormLabel>
+                    <Select
+                      disabled={isPending}
+                      defaultValue={field.value}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          {field.value ? (
+                            <SelectValue placeholder="Select project" />
+                          ) : (
+                            'Select project'
+                          )}
+                        </SelectTrigger>
+                      </FormControl>
+                      <FormMessage />
+                      <SelectContent>
+                        {projectOptions.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            <div className="flex items-center gap-x-2">
+                              <ProjectAvatar
+                                className="size-6"
+                                name={project.name}
+                              />
+                              {project.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormItem>
                 )}
               />
             </div>
 
             <DottedSeparator className="py-7" />
+
+            <FormMessage />
 
             <div className="flex items-center justify-between">
               <Button
@@ -114,7 +264,12 @@ export const CreateTaskForm = ({ onCancel }: CreateTaskFormProps) => {
               >
                 Cancel
               </Button>
-              <Button disabled={isPending} type="submit" size="lg">
+              <Button
+                onClick={() => console.log(createTaskForm.getValues())}
+                disabled={isPending}
+                type="submit"
+                size="lg"
+              >
                 Create Project
               </Button>
             </div>
