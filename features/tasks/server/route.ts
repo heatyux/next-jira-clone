@@ -89,7 +89,7 @@ const app = new Hono()
 
       const assignees = await Promise.all(
         members.documents.map(async (member) => {
-          const user = await users.get(member.$id)
+          const user = await users.get(member.userId)
 
           return {
             ...member,

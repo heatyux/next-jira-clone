@@ -1,7 +1,8 @@
 'use client'
 
+import { PopoverClose } from '@radix-ui/react-popover'
 import { format } from 'date-fns'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, OctagonMinus } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -11,18 +12,20 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 
 type DatePickerProps = {
   value: Date | undefined
-  onChange: (value: Date) => void
+  onChange: (value: Date | null) => void
   disabled?: boolean
   className?: string
   placeholder?: string
+  showReset?: boolean
 }
 
 export const DatePicker = ({
   value,
   onChange,
-  disabled,
+  disabled = false,
   className,
-  placeholder,
+  placeholder = 'Select date',
+  showReset = false,
 }: DatePickerProps) => {
   return (
     <Popover>
@@ -49,6 +52,20 @@ export const DatePicker = ({
           onSelect={(date) => onChange(date as Date)}
           autoFocus
         />
+
+        {showReset && value && (
+          <PopoverClose asChild>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              onClick={() => onChange(null)}
+            >
+              <OctagonMinus className="size-4" />
+              Reset Filter
+            </Button>
+          </PopoverClose>
+        )}
       </PopoverContent>
     </Popover>
   )
