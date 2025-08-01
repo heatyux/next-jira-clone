@@ -1,3 +1,5 @@
+'use client'
+
 import { PropsWithChildren } from 'react'
 
 import { ExternalLink, PencilIcon, Trash } from 'lucide-react'
@@ -8,6 +10,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useConfirm } from '@/hooks/use-confirm'
+
+import { useDeleteTask } from '../api/use-delete-task'
 
 interface TaskActionsProps {
   id: string
@@ -15,8 +20,25 @@ interface TaskActionsProps {
 }
 
 export const TaskActions = ({
+  id,
   children,
 }: PropsWithChildren<TaskActionsProps>) => {
+  const [ConfirmDialog, confirm] = useConfirm(
+    'Delete task',
+    'This action cannot be undone.',
+    'destructive',
+  )
+
+  const { mutate: deleteTask, isPending } = useDeleteTask()
+
+  const onDelete = async () => {
+    const ok = await confirm()
+
+    if (!ok) return
+
+    deleteTask({ param: { taskId: id } })
+  }
+
   return (
     <div className="flex justify-end">
       <DropdownMenu modal={false}>
@@ -35,12 +57,18 @@ export const TaskActions = ({
             <PencilIcon className="size-4 mr-2 stroke-2" />
             Edit Task
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-amber-700 focus:text-am-700 font-medium p-[10px]">
+          <DropdownMenuItem
+            disabled={isPending}
+            className="text-amber-700 focus:text-am-700 font-medium p-[10px]"
+            onClick={onDelete}
+          >
             <Trash className="size-4 mr-2 stroke-2" />
             Delete Task
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <ConfirmDialog />
     </div>
   )
 }
