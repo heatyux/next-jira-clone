@@ -1,6 +1,6 @@
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { ID, Query } from 'node-appwrite'
+import { ID, Models, Query } from 'node-appwrite'
 import { z } from 'zod'
 
 import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from '@/config/db'
@@ -10,7 +10,7 @@ import { createAdminClient } from '@/lib/appwrite'
 import { sessionMiddleware } from '@/lib/session-middleware'
 
 import { createTaskSchema } from '../schema'
-import { TaskStatus } from '../types'
+import { type Task, TaskStatus } from '../types'
 
 const app = new Hono()
   .get(
@@ -70,7 +70,11 @@ const app = new Hono()
         query.push(Query.search('name', search))
       }
 
-      const tasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, query)
+      const tasks = await databases.listDocuments<Task>(
+        DATABASE_ID,
+        TASKS_ID,
+        query,
+      )
 
       const projectIds = tasks.documents.map((task) => task.projectId)
       const assigneeIds = tasks.documents.map((task) => task.assigneeId)
@@ -99,20 +103,22 @@ const app = new Hono()
         }),
       )
 
-      const populatedTasks = tasks.documents.map((task) => {
-        const project = projects.documents.find(
-          (project) => project.$id === task.projectId,
-        )
-        const assignee = assignees.find(
-          (assignee) => assignee.$id === task.assigneeId,
-        )
+      const populatedTasks: (Models.Document & Task)[] = tasks.documents.map(
+        (task) => {
+          const project = projects.documents.find(
+            (project) => project.$id === task.projectId,
+          )
+          const assignee = assignees.find(
+            (assignee) => assignee.$id === task.assigneeId,
+          )
 
-        return {
-          ...task,
-          project,
-          assignee,
-        }
-      })
+          return {
+            ...task,
+            project,
+            assignee,
+          }
+        },
+      )
 
       return ctx.json({
         data: {
