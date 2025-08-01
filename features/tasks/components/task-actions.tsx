@@ -15,6 +15,7 @@ import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id'
 import { useConfirm } from '@/hooks/use-confirm'
 
 import { useDeleteTask } from '../api/use-delete-task'
+import { useEditTaskModal } from '../hooks/use-edit-task-modal'
 
 interface TaskActionsProps {
   id: string
@@ -28,6 +29,8 @@ export const TaskActions = ({
 }: PropsWithChildren<TaskActionsProps>) => {
   const router = useRouter()
   const workspaceId = useWorkspaceId()
+
+  const { open } = useEditTaskModal()
 
   const [ConfirmDialog, confirm] = useConfirm(
     'Delete task',
@@ -75,7 +78,11 @@ export const TaskActions = ({
             <ExternalLink className="size-4 mr-2 stroke-2" />
             Open Project
           </DropdownMenuItem>
-          <DropdownMenuItem className="font-medium p-[10px]">
+          <DropdownMenuItem
+            disabled={isPending}
+            className="font-medium p-[10px]"
+            onClick={() => open(id)}
+          >
             <PencilIcon className="size-4 mr-2 stroke-2" />
             Edit Task
           </DropdownMenuItem>
