@@ -1,22 +1,27 @@
-import { parseAsBoolean, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsStringEnum, useQueryStates } from 'nuqs'
+
+import { TaskStatus } from '../types'
 
 export const useCreateTaskModal = () => {
-  const [isOpen, setIsOpen] = useQueryState(
-    'create-task',
-    parseAsBoolean.withDefault(false).withOptions({ clearOnDefault: true }),
-  )
+  const [{ isOpen, initialStatus }, setTaskModal] = useQueryStates({
+    isOpen: parseAsBoolean
+      .withDefault(false)
+      .withOptions({ clearOnDefault: true }),
+    initialStatus: parseAsStringEnum(Object.values(TaskStatus)),
+  })
 
-  const open = () => {
-    setIsOpen(true)
+  const open = (initialStatus?: TaskStatus) => {
+    setTaskModal({ isOpen: true, initialStatus })
   }
 
   const close = () => {
-    setIsOpen(false)
+    setTaskModal({ isOpen: false, initialStatus: null })
   }
 
   return {
     isOpen,
-    setIsOpen,
+    initialStatus,
+    setTaskModal,
     open,
     close,
   }

@@ -9,13 +9,16 @@ import { useGetMembers } from '@/features/members/api/use-get-members'
 import { useGetProjects } from '@/features/projects/api/use-get-projects'
 import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id'
 
+import { TaskStatus } from '../types'
 import { CreateTaskForm } from './create-task-form'
 
 type CreateTaskFormWrapperProps = {
+  initialStatus?: TaskStatus | null
   onCancel: () => void
 }
 
 export const CreateTaskFormWrapper = ({
+  initialStatus,
   onCancel,
 }: CreateTaskFormWrapperProps) => {
   const workspaceId = useWorkspaceId()
@@ -52,6 +55,7 @@ export const CreateTaskFormWrapper = ({
 
   return (
     <CreateTaskForm
+      initialStatus={initialStatus}
       onCancel={onCancel}
       projectOptions={projectOptions ?? []}
       memberOptions={memberOptions ?? []}

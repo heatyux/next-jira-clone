@@ -13,6 +13,7 @@ import { useCreateTaskModal } from '../hooks/use-create-task-modal'
 import { useTaskFilters } from '../hooks/use-task-filters'
 import { columns } from './columns'
 import { DataFilters } from './data-filters'
+import { DataKanban } from './data-kanban'
 import { DataTable } from './data-table'
 
 export const TaskViewSwitcher = () => {
@@ -51,7 +52,7 @@ export const TaskViewSwitcher = () => {
             </TabsTrigger>
           </TabsList>
 
-          <Button onClick={open} size="sm" className="w-full lg:w-auto">
+          <Button onClick={() => open()} size="sm" className="w-full lg:w-auto">
             <PlusIcon />
             New
           </Button>
@@ -71,7 +72,7 @@ export const TaskViewSwitcher = () => {
               <DataTable columns={columns} data={tasks?.documents ?? []} />
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
-              {JSON.stringify(tasks)}
+              <DataKanban data={tasks?.documents ?? []} />
             </TabsContent>
             <TabsContent value="calendar" className="mt-0">
               {JSON.stringify(tasks)}
