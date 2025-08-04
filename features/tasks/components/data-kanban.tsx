@@ -1,6 +1,11 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
+import {
+  DragDropContext,
+  Draggable,
+  type DropResult,
+  Droppable,
+} from '@hello-pangea/dnd'
 
 import { type Task, TaskStatus } from '../types'
 import { KanbanCard } from './kanban-card'
@@ -20,9 +25,12 @@ type TaskState = {
 
 interface DataKanbanProps {
   data: Task[]
+  onChange: (
+    tasks: { $id: string; status: TaskStatus; position: number }[],
+  ) => void
 }
 
-export const DataKanban = ({ data }: DataKanbanProps) => {
+export const DataKanban = ({ data, onChange }: DataKanbanProps) => {
   const [tasks, setTasks] = useState<TaskState>(() => {
     const initialTasks: TaskState = {
       [TaskStatus.BACKLOG]: [],
@@ -43,9 +51,117 @@ export const DataKanban = ({ data }: DataKanbanProps) => {
     return initialTasks
   })
 
+  useEffect(() => {
+    const newTasks: TaskState = {
+      [TaskStatus.BACKLOG]: [],
+      [TaskStatus.TODO]: [],
+      [TaskStatus.IN_PROGRESS]: [],
+      [TaskStatus.IN_REVIEW]: [],
+      [TaskStatus.DONE]: [],
+    }
+
+    data.forEach((task) => {
+      newTasks[task.status].push(task)
+    })
+
+    Object.keys(newTasks).forEach((status) => {
+      newTasks[status as TaskStatus].sort((a, b) => a.position - b.position)
+    })
+
+    setTasks(newTasks)
+  }, [data])
+
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination) return
+
+      const { source, destination } = result
+      const sourceStatus = source.droppableId as TaskStatus
+      const destStatus = destination.droppableId as TaskStatus
+
+      let updatesPayload: {
+        $id: string
+        status: TaskStatus
+        position: number
+      }[] = []
+
+      setTasks((prevTasks) => {
+        const newTasks = { ...prevTasks }
+
+        // Safely remove task from source column
+        const sourceColumn = newTasks[sourceStatus]
+        const [moveTask] = sourceColumn.splice(source.index, 1)
+
+        // If there is no move task, return the previous state
+        if (!moveTask) {
+          console.error('No task found at the source index.')
+          return prevTasks
+        }
+
+        // Create a new task with updated status
+        const updatedMoveTask =
+          sourceStatus !== destStatus
+            ? { ...moveTask, status: destStatus }
+            : moveTask
+
+        // Update the source column
+        newTasks[sourceStatus] = [...sourceColumn]
+
+        // Add the task to the destination column
+        const destColumn = [...newTasks[destStatus]]
+        destColumn.splice(destination.index, 0, updatedMoveTask)
+        newTasks[destStatus] = destColumn
+
+        // Prepared minimal update payloads
+        updatesPayload = []
+
+        updatesPayload.push({
+          $id: updatedMoveTask.$id,
+          status: destStatus,
+          position: Math.min((destination.index + 1) * 1000, 1_00_000),
+        })
+
+        // Update affected tasks position in the destination column
+        newTasks[destStatus].forEach((task, index) => {
+          if (task && task.$id !== updatedMoveTask.$id) {
+            const newPosition = Math.min((index + 1) * 1000, 1_00_000)
+
+            if (task.position !== newPosition) {
+              updatesPayload.push({
+                $id: task.$id,
+                status: task.status,
+                position: newPosition,
+              })
+            }
+          }
+        })
+
+        // If the task moved between columns, update position in the source column
+        if (sourceStatus !== destStatus) {
+          newTasks[sourceStatus].forEach((task, index) => {
+            const newPosition = Math.min((index + 1) * 1000, 1_00_000)
+
+            if (task.position !== newPosition) {
+              updatesPayload.push({
+                $id: task.$id,
+                status: sourceStatus,
+                position: newPosition,
+              })
+            }
+          })
+        }
+
+        return newTasks
+      })
+
+      onChange(updatesPayload)
+    },
+    [onChange],
+  )
+
   return (
-    <DragDropContext onDragEnd={() => {}}>
-      <div className="flex overflow-x-auto">
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="flex overflow-x-auto custom-scrollbar">
         {boards.map((board) => (
           <div
             key={board}
