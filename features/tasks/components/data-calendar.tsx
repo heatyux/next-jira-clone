@@ -1,9 +1,20 @@
 import { useState } from 'react'
 
-import { format, getDay, parse, startOfDay, startOfWeek } from 'date-fns'
+import {
+  addMonths,
+  format,
+  getDay,
+  parse,
+  startOfDay,
+  startOfWeek,
+  subMonths,
+} from 'date-fns'
 import { enUS } from 'date-fns/locale'
+import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+
+import { Button } from '@/components/ui/button'
 
 import type { Task } from '../types'
 import './data-calendar.css'
@@ -26,9 +37,43 @@ interface DataCalendarProps {
   data: Task[]
 }
 
+interface CustomToolbarProps {
+  date: Date
+  onNavigate: (action: 'PREV' | 'NEXT' | 'TODAY') => void
+}
+
+const CustomToolbar = ({ date, onNavigate }: CustomToolbarProps) => {
+  return (
+    <div className="flex items-center justify-center gap-x-2 w-full mb-4 lg:w-auto lg:justify-start">
+      <Button
+        title="Previous Month"
+        variant="secondary"
+        size="icon"
+        onClick={() => onNavigate('PREV')}
+      >
+        <ChevronLeft className="size-4" />
+      </Button>
+
+      <div className="flex items-center justify-center border border-input rounded-md px-3 py-2 h-8 w-full lg:w-auto">
+        <CalendarIcon className="size-4 mr-2" />
+        <p className="text-sm">{format(date, 'MMMM yyyy')}</p>
+      </div>
+
+      <Button
+        title="Next Month"
+        variant="secondary"
+        size="icon"
+        onClick={() => onNavigate('NEXT')}
+      >
+        <ChevronRight className="size-4" />
+      </Button>
+    </div>
+  )
+}
+
 export const DataCalendar = ({ data }: DataCalendarProps) => {
   const [value, setValue] = useState(
-    data.length > 0 ? data[0].dueDate : new Date(),
+    data.length > 0 ? new Date(data[0].dueDate) : new Date(),
   )
 
   const events = data.map((task) => ({
@@ -40,6 +85,12 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
     assignee: task.assignee,
     status: task.status,
   }))
+
+  const handleNavigate = (action: 'PREV' | 'NEXT' | 'TODAY') => {
+    if (action === 'PREV') setValue(subMonths(value, 1))
+    else if (action === 'NEXT') setValue(addMonths(value, 1))
+    else if (action === 'TODAY') setValue(new Date())
+  }
 
   return (
     <Calendar
@@ -65,6 +116,9 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
             project={event.project}
             status={event.status}
           />
+        ),
+        toolbar: () => (
+          <CustomToolbar date={value} onNavigate={handleNavigate} />
         ),
       }}
     />
