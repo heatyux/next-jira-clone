@@ -238,7 +238,7 @@ const app = new Hono()
   .patch(
     '/:taskId',
     sessionMiddleware,
-    zValidator('json', createTaskSchema),
+    zValidator('json', createTaskSchema.partial()),
     async (ctx) => {
       const databases = ctx.get('databases')
       const user = ctx.get('user')
