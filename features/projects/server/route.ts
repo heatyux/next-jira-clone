@@ -44,6 +44,30 @@ const app = new Hono()
       return ctx.json({ data: projects })
     },
   )
+  .get('/:projectId', sessionMiddleware, async (ctx) => {
+    const databases = ctx.get('databases')
+    const user = ctx.get('user')
+
+    const { projectId } = ctx.req.param()
+
+    const project = await databases.getDocument<Project>(
+      DATABASE_ID,
+      PROJECTS_ID,
+      projectId,
+    )
+
+    const member = await getMember({
+      databases,
+      workspaceId: project.workspaceId,
+      userId: user.$id,
+    })
+
+    if (!member) {
+      return ctx.json({ error: 'Unauthorized.' }, 401)
+    }
+
+    return ctx.json({ data: project })
+  })
   .post(
     '/',
     sessionMiddleware,
