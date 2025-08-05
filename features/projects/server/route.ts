@@ -15,7 +15,7 @@ import { Task, TaskStatus } from '@/features/tasks/types'
 import { sessionMiddleware } from '@/lib/session-middleware'
 
 import { createProjectSchema, updateProjectSchema } from '../schema'
-import { Project } from '../types'
+import type { Project } from '../types'
 
 const app = new Hono()
   .get(
@@ -43,10 +43,14 @@ const app = new Hono()
         return ctx.json({ error: 'Unauthorized.' }, 401)
       }
 
-      const projects = await databases.listDocuments(DATABASE_ID, PROJECTS_ID, [
-        Query.equal('workspaceId', workspaceId),
-        Query.orderDesc('$createdAt'),
-      ])
+      const projects = await databases.listDocuments<Project>(
+        DATABASE_ID,
+        PROJECTS_ID,
+        [
+          Query.equal('workspaceId', workspaceId),
+          Query.orderDesc('$createdAt'),
+        ],
+      )
 
       return ctx.json({ data: projects })
     },
