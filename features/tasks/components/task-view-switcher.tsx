@@ -21,17 +21,26 @@ import { DataFilters } from './data-filters'
 import { DataKanban } from './data-kanban'
 import { DataTable } from './data-table'
 
-export const TaskViewSwitcher = () => {
+interface TaskViewSwitcherProps {
+  projectId?: string
+  hideProjectFilter?: boolean
+}
+
+export const TaskViewSwitcher = ({
+  projectId,
+  hideProjectFilter,
+}: TaskViewSwitcherProps) => {
   const [view, setView] = useQueryState('task-view', { defaultValue: 'table' })
 
-  const [{ projectId, status, assigneeId, dueDate }] = useTaskFilters()
+  const [{ projectId: filterProjectId, status, assigneeId, dueDate }] =
+    useTaskFilters()
 
   const workspaceId = useWorkspaceId()
 
   const { open } = useCreateTaskModal()
   const { data: tasks, isLoading: isLoadingTasks } = useGetTasks({
     workspaceId,
-    projectId,
+    projectId: projectId ?? filterProjectId,
     status,
     assigneeId,
     dueDate,
@@ -73,7 +82,7 @@ export const TaskViewSwitcher = () => {
         </div>
         <DottedSeparator className="my-4" />
 
-        <DataFilters />
+        <DataFilters hideProjectFilter={hideProjectFilter} />
 
         <DottedSeparator className="my-4" />
         {isLoadingTasks ? (
