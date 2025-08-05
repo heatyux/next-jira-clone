@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { InferRequestType, InferResponseType } from 'hono'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/hono'
@@ -14,7 +13,6 @@ type RequestType = InferRequestType<
 >
 
 export const useUpdateWorkspace = () => {
-  const router = useRouter()
   const queryClient = useQueryClient()
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
@@ -32,7 +30,6 @@ export const useUpdateWorkspace = () => {
     },
     onSuccess: ({ data }) => {
       toast.success('Workspace updated.')
-      router.refresh()
 
       queryClient.invalidateQueries({
         queryKey: ['workspaces'],

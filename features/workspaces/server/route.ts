@@ -15,7 +15,7 @@ import { sessionMiddleware } from '@/lib/session-middleware'
 import { generateInviteCode } from '@/lib/utils'
 
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../schema'
-import { Workspace } from '../types'
+import type { Workspace } from '../types'
 
 const app = new Hono()
   .get('/', sessionMiddleware, async (ctx) => {
@@ -38,6 +38,30 @@ const app = new Hono()
     )
 
     return ctx.json({ data: workspaces })
+  })
+  .get('/:workspaceId', sessionMiddleware, async (ctx) => {
+    const databases = ctx.get('databases')
+    const user = ctx.get('user')
+
+    const { workspaceId } = ctx.req.param()
+
+    const member = await getMember({
+      databases,
+      workspaceId,
+      userId: user.$id,
+    })
+
+    if (!member) {
+      return ctx.json({ error: 'Unauthorized.' }, 401)
+    }
+
+    const workspace = await databases.getDocument<Workspace>(
+      DATABASE_ID,
+      WORKSPACES_ID,
+      workspaceId,
+    )
+
+    return ctx.json({ data: workspace })
   })
   .post(
     '/',
