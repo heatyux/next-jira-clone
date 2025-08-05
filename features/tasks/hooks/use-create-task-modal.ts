@@ -11,7 +11,7 @@ export const useCreateTaskModal = () => {
   })
 
   const open = (initialStatus?: TaskStatus) => {
-    setTaskModal({ isOpen: true, initialStatus })
+    setTaskModal({ isOpen: true, initialStatus: initialStatus ?? null })
   }
 
   const close = () => {
