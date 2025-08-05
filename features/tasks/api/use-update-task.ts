@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { InferRequestType, InferResponseType } from 'hono'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/hono'
@@ -14,7 +13,6 @@ type RequestType = InferRequestType<
 >
 
 export const useUpdateTask = () => {
-  const router = useRouter()
   const queryClient = useQueryClient()
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
@@ -41,7 +39,6 @@ export const useUpdateTask = () => {
         queryKey: ['task', data.$id],
         exact: false,
       })
-      router.refresh()
     },
     onError: (error) => {
       console.error('[UPDATE_TASK]: ', error)

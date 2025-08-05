@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { InferRequestType, InferResponseType } from 'hono'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/hono'
@@ -14,7 +13,6 @@ type RequestType = InferRequestType<
 >
 
 export const useDeleteTask = () => {
-  const router = useRouter()
   const queryClient = useQueryClient()
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
@@ -38,7 +36,6 @@ export const useDeleteTask = () => {
         queryKey: ['task', data.$id],
         exact: true,
       })
-      router.refresh()
     },
     onError: (error) => {
       console.error('[DELETE_TASK]: ', error)

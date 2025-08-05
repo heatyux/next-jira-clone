@@ -41,7 +41,7 @@ export const useUpdateProject = () => {
       })
       queryClient.invalidateQueries({
         queryKey: ['tasks', data.workspaceId, data.$id],
-        exact: true,
+        exact: false,
       })
     },
     onError: (error) => {
