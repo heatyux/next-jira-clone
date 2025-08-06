@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -15,7 +17,9 @@ export const Sidebar = () => {
 
       <DottedSeparator className="my-4" />
 
-      <WorkspacesSwitcher />
+      <Suspense>
+        <WorkspacesSwitcher />
+      </Suspense>
 
       <DottedSeparator className="my-4" />
 
@@ -23,7 +27,9 @@ export const Sidebar = () => {
 
       <DottedSeparator className="my-4" />
 
-      <Projects />
+      <Suspense>
+        <Projects />
+      </Suspense>
     </aside>
   )
 }
