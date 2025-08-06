@@ -3,6 +3,7 @@
 import React from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -48,6 +49,7 @@ export const CreateTaskForm = ({
   projectOptions,
   memberOptions,
 }: CreateTaskFormProps) => {
+  const router = useRouter()
   const workspaceId = useWorkspaceId()
 
   const { mutate: createTask, isPending } = useCreateTask()
@@ -71,10 +73,10 @@ export const CreateTaskForm = ({
         json: values,
       },
       {
-        onSuccess: () => {
+        onSuccess: ({ data }) => {
           createTaskForm.reset()
 
-          // TODO: Redirect to new task
+          router.push(`/workspaces/${data.workspaceId}/tasks/${data.$id}`)
         },
       },
     )
