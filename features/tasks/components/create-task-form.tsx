@@ -38,7 +38,7 @@ import { TaskStatus } from '../types'
 type CreateTaskFormProps = {
   initialStatus?: TaskStatus | null
   onCancel?: () => void
-  projectOptions: { id: string; name: string; imageUrl: string }[]
+  projectOptions: { id: string; name: string; imageUrl?: string }[]
   memberOptions: { id: string; name: string }[]
 }
 
