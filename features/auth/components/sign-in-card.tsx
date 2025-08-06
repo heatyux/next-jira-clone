@@ -1,10 +1,14 @@
 'use client'
 
+import { useState } from 'react'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
+import { OAuthProvider } from 'node-appwrite'
 import { useForm } from 'react-hook-form'
 import { FaGithub } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { DottedSeparator } from '@/components/dotted-separator'
@@ -18,12 +22,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { onOAuth } from '@/lib/oauth'
 
 import { useLogin } from '../api/use-login'
 import { signInFormSchema } from '../schema'
 
 export const SignInCard = () => {
-  const { mutate: login, isPending } = useLogin()
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const { mutate: login, isPending: isLoggingId } = useLogin()
+
+  const isPending = isLoggingId || isRedirecting
 
   const signInForm = useForm<z.infer<typeof signInFormSchema>>({
     resolver: zodResolver(signInFormSchema),
@@ -47,6 +55,21 @@ export const SignInCard = () => {
         },
       },
     )
+  }
+
+  const handleOAuth = (
+    provider: OAuthProvider.Github | OAuthProvider.Google,
+  ) => {
+    setIsRedirecting(true)
+
+    onOAuth(provider)
+      .catch((error) => {
+        console.error(error)
+        toast.error('Something went wrong.')
+      })
+      .finally(() => {
+        setIsRedirecting(false)
+      })
   }
 
   return (
@@ -118,11 +141,25 @@ export const SignInCard = () => {
       </div>
 
       <CardContent className="flex flex-col gap-y-4 p-7">
-        <Button variant="secondary" size="lg" className="w-full">
+        <Button
+          disabled={isPending}
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={() => handleOAuth(OAuthProvider.Google)}
+        >
           <FcGoogle className="mr-2 size-5" />
           Login With Google
         </Button>
-        <Button variant="secondary" size="lg" className="w-full">
+        <Button
+          disabled={isPending}
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={() => handleOAuth(OAuthProvider.Github)}
+        >
           <FaGithub className="mr-2 size-5" />
           Login With Github
         </Button>
