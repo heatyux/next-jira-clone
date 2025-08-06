@@ -219,10 +219,10 @@ const MemberList = ({ data, total }: MemberListProps) => {
                   <MemberAvatar name={member.name} className="size-12" />
                   <div className="flex flex-col items-center overflow-hidden">
                     <p className="text-lg font-medium line-clamp-1">
-                      {member.name}
+                      {member.name.slice(0, 15)}
                     </p>
                     <p className="text-sm text-muted-foreground line-clamp-1">
-                      {member.email}
+                      {member.email.slice(0, 20)}
                     </p>
                   </div>
                 </CardContent>
