@@ -34,6 +34,16 @@ export const useBulkUpdateTasks = () => {
         queryKey: ['tasks', data.workspaceId],
         exact: false,
       })
+
+      queryClient.invalidateQueries({
+        queryKey: ['project-analytics'],
+        exact: false,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ['workspace-analytics', data.workspaceId],
+        exact: true,
+      })
     },
     onError: (error) => {
       console.error('[BULK_UPDATE_TASKS]: ', error)

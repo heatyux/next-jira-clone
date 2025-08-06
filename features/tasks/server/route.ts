@@ -305,9 +305,7 @@ const app = new Hono()
 
     await databases.deleteDocument(DATABASE_ID, TASKS_ID, taskId)
 
-    return ctx.json({
-      data: { $id: task.$id, workspaceId: task.workspaceId },
-    })
+    return ctx.json({ data: task })
   })
   .post(
     '/bulk-update',
