@@ -8,11 +8,13 @@ import {
   DATABASE_ID,
   IMAGES_BUCKET_ID,
   MEMBERS_ID,
+  PROJECTS_ID,
   TASKS_ID,
   WORKSPACES_ID,
 } from '@/config/db'
-import { MemberRole } from '@/features/members/types'
+import { type Member, MemberRole } from '@/features/members/types'
 import { getMember } from '@/features/members/utils'
+import type { Project } from '@/features/projects/types'
 import { type Task, TaskStatus } from '@/features/tasks/types'
 import { sessionMiddleware } from '@/lib/session-middleware'
 import { generateInviteCode } from '@/lib/utils'
@@ -377,7 +379,34 @@ const app = new Hono()
       return ctx.json({ error: 'Unauthorized.' }, 401)
     }
 
-    // TODO: Delete members, projects and tasks.
+    // Delete members, projects and tasks.
+    const members = await databases.listDocuments<Member>(
+      DATABASE_ID,
+      MEMBERS_ID,
+      [Query.equal('workspaceId', workspaceId)],
+    )
+
+    const projects = await databases.listDocuments<Project>(
+      DATABASE_ID,
+      PROJECTS_ID,
+      [Query.equal('workspaceId', workspaceId)],
+    )
+
+    const tasks = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
+      Query.equal('workspaceId', workspaceId),
+    ])
+
+    for (const member of members.documents) {
+      await databases.deleteDocument(DATABASE_ID, MEMBERS_ID, member.$id)
+    }
+
+    for (const project of projects.documents) {
+      await databases.deleteDocument(DATABASE_ID, PROJECTS_ID, project.$id)
+    }
+
+    for (const task of tasks.documents) {
+      await databases.deleteDocument(DATABASE_ID, TASKS_ID, task.$id)
+    }
 
     await databases.deleteDocument(DATABASE_ID, WORKSPACES_ID, workspaceId)
 
